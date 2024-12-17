@@ -23,4 +23,7 @@ RUN apk add \
     file \
     m4 \
     libpng-dev \
-    zlib-dev
+    zlib-dev \
+    gifsicle \
+    pngquant \
+    cmake
