@@ -8,8 +8,8 @@ if [ -z "$RUBY_VERSION" ]; then
 fi
 TAG=$RUBY_VERSION-$NODE_VERSION
 
-docker build -t insurgate/node_ruby:$TAG --build-arg NODE_VERSION=$NODE_VERSION --build-arg RUBY_VERSION=$RUBY_VERSION .
-docker build -t insurgate/node_ruby:$TAG-builder --build-arg NODE_VERSION=$NODE_VERSION --build-arg RUBY_VERSION=$RUBY_VERSION --build-arg BUILDER=true .
+docker buildx use multiplatform-builder || docker buildx create --name multiplatform-builder --driver docker-container --bootstrap --use
 
-docker push insurgate/node_ruby:$TAG
-docker push insurgate/node_ruby:$TAG-builder
+docker buildx build -t insurgate/node_ruby:$TAG-slim --build-arg NODE_VERSION=$NODE_VERSION --build-arg RUBY_VERSION=$RUBY_VERSION --build-arg SUFFIX='-slim' --push .
+docker buildx build -t insurgate/node_ruby:$TAG --build-arg NODE_VERSION=$NODE_VERSION --build-arg RUBY_VERSION=$RUBY_VERSION --push .
+docker buildx build -t insurgate/node_ruby:$TAG-builder --build-arg NODE_VERSION=$NODE_VERSION --build-arg RUBY_VERSION=$RUBY_VERSION --build-arg BUILDER=true --platform linux/amd64,linux/arm64 --push .

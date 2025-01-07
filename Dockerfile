@@ -1,17 +1,22 @@
-ARG RUBY_VERSION
-FROM ruby:${RUBY_VERSION}-slim
 ARG NODE_VERSION
-ARG BUILDER=false
+ARG RUBY_VERSION
+ARG SUFFIX=''
+
+FROM node:${NODE_VERSION}${SUFFIX} AS node
+FROM ruby:${RUBY_VERSION}${SUFFIX}
 
 # Base packages
 RUN apt-get update -qq && apt-get install -qq --no-install-recommends curl gnupg2
 
 # Node
-RUN curl -sL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash - \
-  && apt-get install -qq --no-install-recommends nodejs \
-  && npm install -g yarn
+COPY --from=node /usr/local/share /usr/local/share
+COPY --from=node /usr/local/lib /usr/local/lib
+COPY --from=node /usr/local/include /usr/local/include
+COPY --from=node /usr/local/bin /usr/local/bin
+COPY --from=node /opt /opt
 
 # Builder packages
+ARG BUILDER=false
 RUN if [ "$BUILDER" = "true" ]; then \
     apt-get install -qq --no-install-recommends git autoconf build-essential postgresql-common imagemagick \
     && /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y \
